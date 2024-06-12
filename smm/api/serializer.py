@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from smm.models import Gestion, Pagos
+from smm.models import *
 
 class GestionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,6 +9,4 @@ class GestionSerializer(serializers.ModelSerializer):
 class PagosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pagos
-        fields = '__all__'      
-        
-   
+        fields = '__all__'     

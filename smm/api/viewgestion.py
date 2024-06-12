@@ -13,6 +13,7 @@ class CargarArchivoExcelView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     def post(self, request, *args, **kwargs):
         archivo_excel = request.FILES.get('file')
+        print(archivo_excel)
         Gestion.objects.all().delete()  
             
         if not archivo_excel:
