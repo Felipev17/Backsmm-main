@@ -15,52 +15,50 @@ class DescargarCsv(APIView):
         serializerPagos = PagosSerializer(Pago, many=True)
         
         # Convierte los datos serializados a listas de diccionarios
-        dataGestion = [
+        dataGestion =[
             {
-                'Codigo_Gestión': item['Codigo_gestion'],
-                'Nombre_Asesor': item['Nombre_asesor'],
-                'Numero_documento': item['Numero_documento'],
-                'Fecha_gestion': item['Fecha_gestion'],
-                'Resultado': item['Resultado']
+                'nitDeudor': item['nitDeudor'] + ".0",
+                'fechaCompromiso': item['fechaCompromiso'],
+                'grabador': item['grabador'],
             } 
             for item in serializerGestion.data
-        ]
+            ]
 
         # Solo proceder si hay datos de gestión
-        if dataGestion:
-            dfGestion = pd.DataFrame(dataGestion)
-            dfGestion['Fecha_gestion'] = pd.to_datetime(dfGestion['Fecha_gestion'])
-
-            # Extraer el mes de la primera fecha de gestión
-            mes_inicial = dfGestion['Fecha_gestion'].iloc[0].month
+        dfGestion = pd.DataFrame(dataGestion)
+        dfGestion['fechaCompromiso'] = pd.to_datetime(dfGestion['fechaCompromiso'])
 
             # Convertir los datos de pagos a DataFrame
-            dataPagos = [
-                {
-                    'Cedula': itemP['Nit_cliente'],
-                    'Fecha_pago': itemP['Fecha_pago'],
-                    'Valor_pago': itemP['Valor_pago'],
-                }
-                for itemP in serializerPagos.data
-            ]
-            dfPagos = pd.DataFrame(dataPagos)
-            dfPagos['Fecha_pago'] = pd.to_datetime(dfPagos['Fecha_pago'])
+        dataPagos = [
+            {
+                'cedula': itemP['cedula'],
+                'valorRecaudo': itemP['valorRecaudo'],
+                'fechaPago': itemP['fechaPago'],
+            }
+            for itemP in serializerPagos.data
+        ]
 
-            # Filtrar los pagos que coinciden con el mes de la fecha de gestión inicial
-            dfPagos = dfPagos[dfPagos['Fecha_pago'].dt.month == mes_inicial]
-
-            # Realizar la unión de los DataFrames con la validación de fechas
-            dfJuntada = pd.merge(dfGestion, dfPagos, left_on='Numero_documento', right_on='Cedula', how='inner')
-            dfJuntada = dfJuntada[dfJuntada['Fecha_pago'] >= dfJuntada['Fecha_gestion']]
+        dfPagos = pd.DataFrame(dataPagos)            
         
-        else:
-            dfJuntada = pd.DataFrame()
+        dfPagos['fechaPago'] = pd.to_datetime(dfPagos['fechaPago'])
 
+        # Realizar la unión de los DataFrames con la validación de fechas
+        dfunion = pd.merge(dfGestion, dfPagos, left_on='nitDeudor', right_on='cedula', how='inner')
+        print(dfunion)
+
+        dfunion['fechaCompromiso'] = dfunion['fechaCompromiso'] + pd.Timedelta(days=1)
+        dfunion = dfunion[dfunion['fechaPago'] <= dfunion['fechaCompromiso']]
+
+        dfunion = dfunion.sort_values(by='fechaPago', ascending=False)
+
+        # Eliminar duplicados manteniendo la última fecha de pago para cada 'fechaCompromiso'
+        dfunion = dfunion.drop_duplicates(subset=['nitDeudor'], keep='first')
+        
         # Crear una respuesta HTTP con el archivo CSV
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="Cruce_registro.csv"'
         
         # Exportar el DataFrame a CSV en la respuesta
-        dfJuntada.to_csv(path_or_buf=response, index=False)
+        dfunion.to_csv(path_or_buf=response, index=False)
         
         return response
