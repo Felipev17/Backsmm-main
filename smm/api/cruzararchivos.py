@@ -39,7 +39,7 @@ class DescargarCsv(APIView):
         ]
 
         dfPagos = pd.DataFrame(dataPagos)            
-        
+        print(dfPagos)
         dfPagos['fechaPago'] = pd.to_datetime(dfPagos['fechaPago'])
 
         # Realizar la unión de los DataFrames con la validación de fechas
@@ -52,6 +52,8 @@ class DescargarCsv(APIView):
 
         # Eliminar duplicados manteniendo la última fecha de pago para cada 'fechaCompromiso'
         dfunion = dfunion.drop_duplicates(subset=['nitDeudor'], keep='first')
+
+        dfunion['valorRecaudo'] = dfunion['valorRecaudo'] * 1000
         
         # Crear una respuesta HTTP con el archivo CSV
         response = HttpResponse(content_type='text/csv')

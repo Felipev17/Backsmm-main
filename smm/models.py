@@ -13,7 +13,7 @@ class Gestion(models.Model):
 
 class Pagos(models.Model):
     cedula = models.CharField(max_length=200)
-    valorRecaudo = models.CharField(max_length=200)
+    valorRecaudo = models.IntegerField()
     fechaPago = models.DateTimeField(null=True)
    
 
