@@ -17,8 +17,8 @@ class DescargarCsv(APIView):
         # Convierte los datos serializados a listas de diccionarios
         dataGestion =[
             {
-                'nitDeudor': item['nitDeudor'] + ".0",
-                'fechaCompromiso': item['fechaCompromiso'],
+                'nitDeudor': item['nitDeudor'],
+                'fechaGestion': item['fechaGestion'],
                 'grabador': item['grabador'],
             } 
             for item in serializerGestion.data
@@ -26,7 +26,7 @@ class DescargarCsv(APIView):
 
         # Solo proceder si hay datos de gestión
         dfGestion = pd.DataFrame(dataGestion)
-        dfGestion['fechaCompromiso'] = pd.to_datetime(dfGestion['fechaCompromiso'])
+        dfGestion['fechaGestion'] = pd.to_datetime(dfGestion['fechaGestion'])
 
             # Convertir los datos de pagos a DataFrame
         dataPagos = [
@@ -46,10 +46,9 @@ class DescargarCsv(APIView):
         dfunion = pd.merge(dfGestion, dfPagos, left_on='nitDeudor', right_on='cedula', how='inner')
         print(dfunion)
 
-        dfunion['fechaCompromiso'] = dfunion['fechaCompromiso'] + pd.Timedelta(days=1)
-        dfunion = dfunion[dfunion['fechaPago'] <= dfunion['fechaCompromiso']]
+        dfunion = dfunion[dfunion['fechaGestion'] <= dfunion['fechaPago']]
 
-        dfunion = dfunion.sort_values(by='fechaPago', ascending=False)
+        dfunion = dfunion.sort_values(by='fechaGestion', ascending=False)
 
         # Eliminar duplicados manteniendo la última fecha de pago para cada 'fechaCompromiso'
         dfunion = dfunion.drop_duplicates(subset=['nitDeudor'], keep='first')

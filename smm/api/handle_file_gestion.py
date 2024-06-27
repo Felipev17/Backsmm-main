@@ -8,13 +8,13 @@ def handle_file(file):
         batch = []
         # chunk['Fecha Compromiso'] = pd.to_datetime(chunk['Fecha Compromiso'], format='%Y/%m/%d', errors='coerce')
         for row in chunk.to_dict(orient='records'):
-            try:
-                fecha_compromiso = row['Fecha Compromiso']      
+            try:    
+                Fecha_gestion = row['Fecha gestion']      
                 # if pd.isna(row['Fecha Compromiso']) else None
                 registro_data = { 
                     'consecutivoObligacion': row['Consecutivo obligación'],
                     'nitDeudor': row['Nit Deudor'],
-                    'fechaCompromiso': fecha_compromiso,
+                    'fechaGestion': Fecha_gestion,
                     'estado': row['Estado'],
                     'descripcionCodigoCobro': row['Descripcion Codigo Cobro'],
                     'grabador': row['Grabador'],

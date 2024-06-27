@@ -5,7 +5,7 @@ from django.utils import timezone
 class Gestion(models.Model):
     consecutivoObligacion = models.CharField(max_length=20)
     nitDeudor = models.CharField(max_length=20)
-    fechaCompromiso = models.DateTimeField(null=True)
+    fechaGestion = models.DateTimeField(null=True)
     estado = models.CharField(max_length=100)
     descripcionCodigoCobro = models.CharField(max_length=200)
     grabador = models.CharField(max_length=20)
@@ -13,7 +13,7 @@ class Gestion(models.Model):
 
 class Pagos(models.Model):
     cedula = models.CharField(max_length=200)
-    valorRecaudo = models.CharField(max_length=100)
+    valorRecaudo = models.CharField(max_length=200)
     fechaPago = models.DateTimeField(null=True)
    
 
